@@ -33,13 +33,28 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Request logging in development
-if (process.env.NODE_ENV === 'development') {
-  app.use((req, res, next) => {
-    console.log(`${req.method} ${req.path}`);
-    next();
+// Seed the database once at startup — store as a promise so all requests
+// wait for it to finish before processing (critical for Vercel serverless).
+const seedReady = seedDatabase()
+  .then(() => {
+    console.log('\n=== LNMIIT Degree Audit System API ===');
+    console.log(`Environment: ${process.env.NODE_ENV}`);
+    console.log(`Started at: ${new Date().toLocaleString()}`);
+    console.log('\nTest Credentials:');
+    console.log('  Student: 24ucs101@lnmiit.ac.in / password123');
+    console.log('  Advisor: dr.sharma@lnmiit.ac.in / password123');
+    console.log('  Registrar: registrar@lnmiit.ac.in / password123');
+    console.log('\n======================================\n');
+  })
+  .catch(err => {
+    console.error('Failed to seed database:', err);
   });
-}
+
+// Middleware to wait for seed before processing any API request
+app.use(async (req, res, next) => {
+  await seedReady;
+  next();
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -69,36 +84,17 @@ app.use((req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Start server
+// Start server (for local dev / traditional hosting)
 const PORT = process.env.PORT || 5000;
 
-async function startServer() {
-  try {
-    // Initialize database with seed data
-    await seedDatabase();
-    
-    app.listen(PORT, () => {
-      console.log(`\n=== LNMIIT Degree Audit System API ===`);
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Environment: ${process.env.NODE_ENV}`);
-      console.log(`Started at: ${new Date().toLocaleString()}`);
-      console.log(`\nAPI Endpoints:`);
-      console.log(`  - POST http://localhost:${PORT}/api/auth/login`);
-      console.log(`  - GET  http://localhost:${PORT}/api/students/:id/audit`);
-      console.log(`  - GET  http://localhost:${PORT}/api/advisors/:id/at-risk`);
-      console.log(`  - POST http://localhost:${PORT}/api/registrar/import/validate`);
-      console.log(`\nTest Credentials:`);
-      console.log(`  Student: 24ucs101@lnmiit.ac.in / password123`);
-      console.log(`  Advisor: dr.sharma@lnmiit.ac.in / password123`);
-      console.log(`  Registrar: registrar@lnmiit.ac.in / password123`);
-      console.log(`\n======================================\n`);
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
+if (require.main === module) {
+  // Only listen when run directly (not when imported as a module by Vercel)
+  const server = app.listen(PORT, () => {
+    console.log(`\n=== LNMIIT Degree Audit System API ===`);
+    console.log(`Server running on port ${PORT}`);
+    console.log(`\n======================================\n`);
+  });
 }
 
-startServer();
-
 module.exports = app;
+
