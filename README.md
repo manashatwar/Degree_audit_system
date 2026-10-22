@@ -297,4 +297,4 @@ This project is developed as part of the Software Development Laboratory (CS314)
 
 ## Support
 
-For questions or issues, contact Team T030 members or refer to the comprehensive documentation in the `.kiro/documentation/` directory.
+For questions or issues, contact Team T030 members or refer to the comprehensive documentation in the `.docs/documentation/` directory.
