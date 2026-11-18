@@ -2,12 +2,7 @@
 
 A comprehensive web-based degree audit system for The LNM Institute of Information Technology, Jaipur. This system automates academic progress tracking, degree requirement verification, and at-risk student identification.
 
-## Team T030
 
-- Hatwar Manas Vinod (24UCC175)
-- Dhruv Gupta (24UCC176)
-- Aradhya Raina (24UCC177)
-- Kota Sai Vignesh (24UCC178)
 
 ## Project Overview
 
