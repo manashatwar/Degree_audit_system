@@ -14,5 +14,15 @@ export const studentService = {
   getProgress: async (studentId) => {
     const response = await api.get(`/students/${studentId}/progress`);
     return response.data.data;
+  },
+
+  getExceptions: async (studentId) => {
+    const response = await api.get(`/students/${studentId}/exceptions`);
+    return response.data.data;
+  },
+
+  submitException: async (studentId, data) => {
+    const response = await api.post(`/students/${studentId}/exceptions`, data);
+    return response.data;
   }
 };

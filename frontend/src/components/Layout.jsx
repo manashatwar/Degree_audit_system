@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from './ui/button';
-import { LogOut, Home, FileText, Users, Upload, BarChart3 } from 'lucide-react';
+import { LogOut, Home, FileText, Users, Upload, BarChart3, ShieldCheck, BookOpen, Calendar, GraduationCap, Settings } from 'lucide-react';
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
@@ -19,6 +19,7 @@ export default function Layout({ children }) {
       return [
         { name: 'Dashboard', path: '/student/dashboard', icon: Home },
         { name: 'My Audit', path: '/student/audit', icon: FileText },
+        { name: 'Exception Requests', path: '/student/exceptions', icon: ShieldCheck },
       ];
     } else if (user.role === 'FacultyAdvisor') {
       return [
@@ -29,6 +30,24 @@ export default function Layout({ children }) {
         { name: 'Dashboard', path: '/registrar/dashboard', icon: Home },
         { name: 'Import Transcripts', path: '/registrar/import', icon: Upload },
         { name: 'Manage Advisors', path: '/registrar/advisors', icon: Users },
+        { name: 'Catalog Management', path: '/registrar/catalogs', icon: BookOpen },
+        { name: 'Catalog Year', path: '/registrar/catalog-year', icon: Calendar },
+      ];
+    } else if (user.role === 'Dean') {
+      return [
+        { name: 'Analytics', path: '/dean/dashboard', icon: BarChart3 },
+        { name: 'Exception Requests', path: '/dean/exceptions', icon: ShieldCheck },
+      ];
+    } else if (user.role === 'AdmissionCell') {
+      return [
+        { name: 'Transfer Credits', path: '/admission/credits', icon: GraduationCap },
+      ];
+    } else if (user.role === 'SystemAdmin' || user.role === 'Admin') {
+      return [
+        { name: 'Dashboard', path: '/admin/dashboard', icon: Home },
+        { name: 'User Management', path: '/admin/users', icon: Users },
+        { name: 'System Settings', path: '/admin/settings', icon: Settings },
+        { name: 'Audit Logs', path: '/admin/logs', icon: FileText },
       ];
     }
     return [];

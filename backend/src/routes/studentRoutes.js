@@ -20,4 +20,10 @@ router.get('/:id/transcript', studentController.getTranscript);
 // GET /api/students/:id/progress - Get progress summary
 router.get('/:id/progress', studentController.getProgress);
 
+// GET /api/students/:id/exceptions - Get student exception requests
+router.get('/:id/exceptions', studentController.getExceptions);
+
+// POST /api/students/:id/exceptions - Submit exception request (Student or Advisor)
+router.post('/:id/exceptions', authorize('Student', 'FacultyAdvisor'), studentController.submitException);
+
 module.exports = router;

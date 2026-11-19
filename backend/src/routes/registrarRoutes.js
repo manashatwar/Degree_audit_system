@@ -24,4 +24,10 @@ router.post('/import/confirm', registrarController.confirmImport);
 // GET /api/registrar/import/:id/status - Get import status
 router.get('/import/:id/status', registrarController.getImportStatus);
 
+// GET /api/registrar/students - Get all students with catalogYear
+router.get('/students', registrarController.getAllStudents);
+
+// PUT /api/registrar/students/:studentId/catalog-year - Update student catalog year
+router.put('/students/:studentId/catalog-year', registrarController.updateStudentCatalogYear);
+
 module.exports = router;

@@ -11,11 +11,17 @@ const User = require('../models/User');
 const Student = require('../models/Student');
 const FacultyAdvisor = require('../models/FacultyAdvisor');
 const RegistrarStaff = require('../models/RegistrarStaff');
+const Dean = require('../models/Dean');
 const Course = require('../models/Course');
 const Transcript = require('../models/Transcript');
 const Catalog = require('../models/Catalog');
 const Requirement = require('../models/Requirement');
 const AdvisorAssignment = require('../models/AdvisorAssignment');
+const ExceptionRequest = require('../models/ExceptionRequest');
+const TransferCredit = require('../models/TransferCredit');
+const AdmissionStaff = require('../models/AdmissionStaff');
+const SystemConfig = require('../models/SystemConfig');
+const SystemLog = require('../models/SystemLog');
 
 async function seedDatabase() {
   console.log('Seeding database with sample data...');
@@ -49,13 +55,32 @@ async function seedDatabase() {
     { userId: 'U010', email: 'dr.patel@lnmiit.ac.in', password: hashedPassword, role: 'FacultyAdvisor' },
     { userId: 'U011', email: 'dr.gupta@lnmiit.ac.in', password: hashedPassword, role: 'FacultyAdvisor' },
     // Registrar
-    { userId: 'U012', email: 'registrar@lnmiit.ac.in', password: hashedPassword, role: 'RegistrarStaff' }
+    { userId: 'U012', email: 'registrar@lnmiit.ac.in', password: hashedPassword, role: 'RegistrarStaff' },
+    // Medium-risk student
+    { userId: 'U016', email: '23ucs089@lnmiit.ac.in', password: hashedPassword, role: 'Student' },
+    // Dean of Academic Affairs
+    { userId: 'U017', email: 'dean.academics@lnmiit.ac.in', password: hashedPassword, role: 'Dean' },
+    // Admission Cell
+    { userId: 'U018', email: 'admission@lnmiit.ac.in', password: hashedPassword, role: 'AdmissionCell' },
+    // System Administrator (SRS §11.7)
+    { userId: 'U019', email: 'admin@lnmiit.ac.in', password: hashedPassword, role: 'SystemAdmin', name: 'Vikramaditya Rathore', department: 'CCIT' }
   ];
 
   users.forEach(userData => {
     const user = new User(userData);
     storageService.create('users', user);
   });
+
+  // Seed Admission Staff
+  const admissionOfficer = new AdmissionStaff({
+    admissionOfficerId: 'ADM001',
+    userId: 'U018',
+    name: 'Dr. Kavita Verma',
+    email: 'admission@lnmiit.ac.in',
+    department: 'Admission Cell',
+    designation: 'Head, Admission Cell'
+  });
+  storageService.create('admissionStaff', admissionOfficer.toJSON());
 
   // 2. Create Students (department/program auto-detected from studentId)
   const students = [
@@ -75,7 +100,9 @@ async function seedDatabase() {
     { studentId: '24UEC048', userId: 'U006', name: 'Neha Singh', email: '24uec048@lnmiit.ac.in', currentSemester: 3, status: 'Active' },
     { studentId: '23UEC091', userId: 'U007', name: 'Rahul Gupta', email: '23uec091@lnmiit.ac.in', currentSemester: 5, status: 'Active' },
     // At-risk CSE Student
-    { studentId: '23UCS075', userId: 'U008', name: 'Vikram Patel', email: '23ucs075@lnmiit.ac.in', currentSemester: 5, status: 'Active' }
+    { studentId: '23UCS075', userId: 'U008', name: 'Vikram Patel', email: '23ucs075@lnmiit.ac.in', currentSemester: 5, status: 'Active' },
+    // Medium-risk CSE Student (Low CGPA only → score 3 → Medium)
+    { studentId: '23UCS089', userId: 'U016', name: 'Sneha Joshi', email: '23ucs089@lnmiit.ac.in', currentSemester: 5, status: 'Active' }
   ];
 
   students.forEach(studentData => {
@@ -105,6 +132,12 @@ async function seedDatabase() {
     const registrar = new RegistrarStaff(registrarData);
     storageService.create('registrarStaff', registrar);
   });
+
+  // 4b. Create Dean
+  const deans = [
+    { deanId: 'D001', userId: 'U017', name: 'Prof. Suresh Mehta', department: 'Academic Affairs', email: 'dean.academics@lnmiit.ac.in' }
+  ];
+  deans.forEach(d => storageService.create('deans', new Dean(d)));
 
   // 5. Create Courses with Semester Mapping
   const courses = [
@@ -239,6 +272,216 @@ async function seedDatabase() {
       minimumGPA: 6.0, 
       courseList: ['HS101', 'HS201'],
       rules: 'All humanities courses must be completed'
+    },
+
+    // CAT-2023-CSE Requirements
+    { 
+      requirementId: 'REQ-2023-CSE-01', 
+      catalogId: 'CAT-2023-CSE', 
+      category: 'Core Courses', 
+      description: 'Core Computer Science courses (2023 catalog)', 
+      minimumCredits: 60, 
+      minimumGPA: 6.0, 
+      courseList: ['CS101', 'CS102', 'CS201', 'CS202', 'CS301', 'CS302', 'CS303', 'CS401'],
+      rules: 'All core courses must be completed'
+    },
+    { 
+      requirementId: 'REQ-2023-CSE-02', 
+      catalogId: 'CAT-2023-CSE', 
+      category: 'Mathematics', 
+      description: 'Mathematics foundation courses (2023 catalog)', 
+      minimumCredits: 12, 
+      minimumGPA: 6.0, 
+      courseList: ['MA101', 'MA102', 'MA201'],
+      rules: 'All mathematics courses must be completed'
+    },
+    { 
+      requirementId: 'REQ-2023-CSE-03', 
+      catalogId: 'CAT-2023-CSE', 
+      category: 'Electives', 
+      description: 'Technical elective courses (2023 catalog)', 
+      minimumCredits: 18, 
+      minimumGPA: 6.0, 
+      courseList: ['CS402', 'CS403'],
+      rules: 'Minimum 5 elective courses'
+    },
+    { 
+      requirementId: 'REQ-2023-CSE-04', 
+      catalogId: 'CAT-2023-CSE', 
+      category: 'Humanities', 
+      description: 'Humanities and communication courses (2023 catalog)', 
+      minimumCredits: 8, 
+      minimumGPA: 6.0, 
+      courseList: ['HS101', 'HS201'],
+      rules: 'All humanities courses must be completed'
+    },
+
+    // CAT-2024-CCE Requirements
+    { 
+      requirementId: 'REQ-2024-CCE-01', 
+      catalogId: 'CAT-2024-CCE', 
+      category: 'Core Courses', 
+      description: 'Core Computer & Communication Engineering courses', 
+      minimumCredits: 60, 
+      minimumGPA: 6.0, 
+      courseList: ['CS101', 'CS102', 'CS201', 'EC101', 'EC201', 'EC301'],
+      rules: 'All core courses must be completed'
+    },
+    { 
+      requirementId: 'REQ-2024-CCE-02', 
+      catalogId: 'CAT-2024-CCE', 
+      category: 'Mathematics', 
+      description: 'Mathematics foundation courses', 
+      minimumCredits: 12, 
+      minimumGPA: 6.0, 
+      courseList: ['MA101', 'MA102', 'MA201'],
+      rules: 'All mathematics courses must be completed'
+    },
+    { 
+      requirementId: 'REQ-2024-CCE-03', 
+      catalogId: 'CAT-2024-CCE', 
+      category: 'Electives', 
+      description: 'Technical elective courses', 
+      minimumCredits: 20, 
+      minimumGPA: 6.0, 
+      courseList: [],
+      rules: 'Minimum 5 elective courses from approved list'
+    },
+    { 
+      requirementId: 'REQ-2024-CCE-04', 
+      catalogId: 'CAT-2024-CCE', 
+      category: 'Humanities', 
+      description: 'Humanities and communication courses', 
+      minimumCredits: 8, 
+      minimumGPA: 6.0, 
+      courseList: ['HS101', 'HS201'],
+      rules: 'All humanities courses must be completed'
+    },
+
+    // CAT-2023-CCE Requirements
+    { 
+      requirementId: 'REQ-2023-CCE-01', 
+      catalogId: 'CAT-2023-CCE', 
+      category: 'Core Courses', 
+      description: 'Core Computer & Communication Engineering courses (2023)', 
+      minimumCredits: 58, 
+      minimumGPA: 6.0, 
+      courseList: ['CS101', 'CS102', 'CS201', 'EC101', 'EC201', 'EC301'],
+      rules: 'All core courses must be completed'
+    },
+    { 
+      requirementId: 'REQ-2023-CCE-02', 
+      catalogId: 'CAT-2023-CCE', 
+      category: 'Mathematics', 
+      description: 'Mathematics foundation courses (2023)', 
+      minimumCredits: 12, 
+      minimumGPA: 6.0, 
+      courseList: ['MA101', 'MA102', 'MA201'],
+      rules: 'All mathematics courses must be completed'
+    },
+    { 
+      requirementId: 'REQ-2023-CCE-03', 
+      catalogId: 'CAT-2023-CCE', 
+      category: 'Electives', 
+      description: 'Technical elective courses (2023)', 
+      minimumCredits: 18, 
+      minimumGPA: 6.0, 
+      courseList: [],
+      rules: 'Minimum 5 elective courses from approved list'
+    },
+    { 
+      requirementId: 'REQ-2023-CCE-04', 
+      catalogId: 'CAT-2023-CCE', 
+      category: 'Humanities', 
+      description: 'Humanities and communication courses (2023)', 
+      minimumCredits: 8, 
+      minimumGPA: 6.0, 
+      courseList: ['HS101', 'HS201'],
+      rules: 'All humanities courses must be completed'
+    },
+
+    // CAT-2024-ECE Requirements
+    { 
+      requirementId: 'REQ-2024-ECE-01', 
+      catalogId: 'CAT-2024-ECE', 
+      category: 'Core Courses', 
+      description: 'Core Electronics & Communication Engineering courses', 
+      minimumCredits: 64, 
+      minimumGPA: 6.0, 
+      courseList: ['EC101', 'EC201', 'EC301', 'EC401', 'MA101', 'MA102'],
+      rules: 'All core courses must be completed'
+    },
+    { 
+      requirementId: 'REQ-2024-ECE-02', 
+      catalogId: 'CAT-2024-ECE', 
+      category: 'Mathematics', 
+      description: 'Mathematics foundation courses', 
+      minimumCredits: 12, 
+      minimumGPA: 6.0, 
+      courseList: ['MA101', 'MA102', 'MA201'],
+      rules: 'All mathematics courses must be completed'
+    },
+    { 
+      requirementId: 'REQ-2024-ECE-03', 
+      catalogId: 'CAT-2024-ECE', 
+      category: 'Electives', 
+      description: 'Technical elective courses', 
+      minimumCredits: 20, 
+      minimumGPA: 6.0, 
+      courseList: [],
+      rules: 'Minimum 5 elective courses from approved list'
+    },
+    { 
+      requirementId: 'REQ-2024-ECE-04', 
+      catalogId: 'CAT-2024-ECE', 
+      category: 'Humanities', 
+      description: 'Humanities and communication courses', 
+      minimumCredits: 8, 
+      minimumGPA: 6.0, 
+      courseList: ['HS101', 'HS201'],
+      rules: 'All humanities courses must be completed'
+    },
+
+    // CAT-2023-ECE Requirements
+    { 
+      requirementId: 'REQ-2023-ECE-01', 
+      catalogId: 'CAT-2023-ECE', 
+      category: 'Core Courses', 
+      description: 'Core Electronics & Communication Engineering courses (2023)', 
+      minimumCredits: 62, 
+      minimumGPA: 6.0, 
+      courseList: ['EC101', 'EC201', 'EC301', 'EC401', 'MA101', 'MA102'],
+      rules: 'All core courses must be completed'
+    },
+    { 
+      requirementId: 'REQ-2023-ECE-02', 
+      catalogId: 'CAT-2023-ECE', 
+      category: 'Mathematics', 
+      description: 'Mathematics foundation courses (2023)', 
+      minimumCredits: 12, 
+      minimumGPA: 6.0, 
+      courseList: ['MA101', 'MA102', 'MA201'],
+      rules: 'All mathematics courses must be completed'
+    },
+    { 
+      requirementId: 'REQ-2023-ECE-03', 
+      catalogId: 'CAT-2023-ECE', 
+      category: 'Electives', 
+      description: 'Technical elective courses (2023)', 
+      minimumCredits: 18, 
+      minimumGPA: 6.0, 
+      courseList: [],
+      rules: 'Minimum 5 elective courses from approved list'
+    },
+    { 
+      requirementId: 'REQ-2023-ECE-04', 
+      catalogId: 'CAT-2023-ECE', 
+      category: 'Humanities', 
+      description: 'Humanities and communication courses (2023)', 
+      minimumCredits: 8, 
+      minimumGPA: 6.0, 
+      courseList: ['HS101', 'HS201'],
+      rules: 'All humanities courses must be completed'
     }
   ];
 
@@ -316,7 +559,41 @@ async function seedDatabase() {
     { transcriptId: uuidv4(), studentId: '24UEC048', courseCode: 'MA101', semester: '2024-2025 I', grade: 'AB', creditsEarned: 4, status: 'Imported' },
     { transcriptId: uuidv4(), studentId: '24UEC048', courseCode: 'PH101', semester: '2024-2025 I', grade: 'B', creditsEarned: 4, status: 'Imported' },
     { transcriptId: uuidv4(), studentId: '24UEC048', courseCode: 'EE101', semester: '2024-2025 II', grade: 'B', creditsEarned: 4, status: 'Imported' },
-    { transcriptId: uuidv4(), studentId: '24UEC048', courseCode: 'CH101', semester: '2024-2025 I', grade: 'A', creditsEarned: 4, status: 'Imported' }
+    { transcriptId: uuidv4(), studentId: '24UEC048', courseCode: 'CH101', semester: '2024-2025 I', grade: 'A', creditsEarned: 4, status: 'Imported' },
+
+    // Sneha Joshi (23UCS089) - Medium risk: Low CGPA (~5.5) but sufficient credits & core courses done
+    // Semester 1 (2023-2024 I)
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'CS101', semester: '2023-2024 I', grade: 'CD', creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'MA101', semester: '2023-2024 I', grade: 'D',  creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'PH101', semester: '2023-2024 I', grade: 'CD', creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'CH101', semester: '2023-2024 I', grade: 'D',  creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'HS101', semester: '2023-2024 I', grade: 'C',  creditsEarned: 2, importDate: new Date().toISOString(), status: 'Imported' },
+    // Semester 2 (2023-2024 II)
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'CS102', semester: '2023-2024 II', grade: 'CD', creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'MA102', semester: '2023-2024 II', grade: 'D',  creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'PH102', semester: '2023-2024 II', grade: 'CD', creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'EE101', semester: '2023-2024 II', grade: 'C',  creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'HS102', semester: '2023-2024 II', grade: 'C',  creditsEarned: 2, importDate: new Date().toISOString(), status: 'Imported' },
+    // Semester 3 (2024-2025 I)
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'CS201', semester: '2024-2025 I', grade: 'CD', creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'CS202', semester: '2024-2025 I', grade: 'D',  creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'CS203', semester: '2024-2025 I', grade: 'C',  creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'MA201', semester: '2024-2025 I', grade: 'CD', creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'HS201', semester: '2024-2025 I', grade: 'C',  creditsEarned: 2, importDate: new Date().toISOString(), status: 'Imported' },
+    // Semester 4 (2024-2025 II)
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'CS301', semester: '2024-2025 II', grade: 'D',  creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'CS302', semester: '2024-2025 II', grade: 'CD', creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'CS303', semester: '2024-2025 II', grade: 'C',  creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'CS304', semester: '2024-2025 II', grade: 'CD', creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'HS301', semester: '2024-2025 II', grade: 'C',  creditsEarned: 3, importDate: new Date().toISOString(), status: 'Imported' },
+    // Semester 5 (2025-2026 I) - reaches ~100 credits total, no deficiency
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'CS401', semester: '2025-2026 I', grade: 'CD', creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'CS402', semester: '2025-2026 I', grade: 'D',  creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'CS403', semester: '2025-2026 I', grade: 'C',  creditsEarned: 4, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'OE101', semester: '2025-2026 I', grade: 'C',  creditsEarned: 3, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'OE102', semester: '2025-2026 I', grade: 'D',  creditsEarned: 3, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'HS201', semester: '2025-2026 I', grade: 'C',  creditsEarned: 2, importDate: new Date().toISOString(), status: 'Imported' },
+    { transcriptId: uuidv4(), studentId: '23UCS089', courseCode: 'OE103', semester: '2025-2026 I', grade: 'CD', creditsEarned: 3, importDate: new Date().toISOString(), status: 'Imported' }
   ];
 
   transcripts.forEach(transcriptData => {
@@ -335,6 +612,8 @@ async function seedDatabase() {
     { assignmentId: 'AS009', advisorId: 'A001', studentId: '23UCS101', assignmentDate: '2023-08-01', status: 'Active' },
     { assignmentId: 'AS010', advisorId: 'A001', studentId: '24UCS103', assignmentDate: '2024-08-01', status: 'Active' },
     { assignmentId: 'AS011', advisorId: 'A001', studentId: '24UCS104', assignmentDate: '2024-08-01', status: 'Active' },
+    // Medium-risk student under Dr. Sharma
+    { assignmentId: 'AS012', advisorId: 'A001', studentId: '23UCS089', assignmentDate: '2023-08-01', status: 'Active' },
     
     // CCE Students under Dr. Gupta
     { assignmentId: 'AS005', advisorId: 'A003', studentId: '24UCC175', assignmentDate: '2024-08-01', status: 'Active' },
@@ -349,6 +628,196 @@ async function seedDatabase() {
     const assignment = new AdvisorAssignment(assignmentData);
     storageService.create('advisorAssignments', assignment);
   });
+
+  // 10. Seed sample Exception Requests
+  const exceptionRequests = [
+    {
+      requestId: uuidv4(),
+      studentId: '23UCS048',
+      requestType: 'CourseWaiver',
+      description: 'Request to waive MA101 (Mathematics I) due to medical leave during Semester 1. Supported by medical certificates from campus health centre.',
+      requestedBy: 'U003',
+      submittedDate: '2026-09-10T10:00:00.000Z',
+      status: 'Pending',
+      reviewedBy: null,
+      reviewDate: null,
+      reviewNotes: ''
+    },
+    {
+      requestId: uuidv4(),
+      studentId: '23UCS075',
+      requestType: 'GradeException',
+      description: 'Request to substitute CS102 (Data Structures) failure with an equivalent MOOC course completed on NPTEL with certificate. Student scored 85% in the NPTEL course.',
+      requestedBy: 'U008',
+      submittedDate: '2026-10-01T09:30:00.000Z',
+      status: 'Pending',
+      reviewedBy: null,
+      reviewDate: null,
+      reviewNotes: ''
+    },
+    {
+      requestId: 'EXP-2026-003',
+      studentId: '24UCS101',
+      requestType: 'CreditSubstitution',
+      courseCode: 'CS402',
+      description: 'Request to count coursework from an international exchange semester at TU Munich towards CS402 elective credits.',
+      requestedBy: 'U001',
+      submittedDate: '2026-08-15T14:00:00.000Z',
+      status: 'Approved',
+      reviewedBy: 'U017',
+      reviewDate: '2026-08-20T11:00:00.000Z',
+      reviewNotes: 'Approved by Dean. TU Munich coursework aligns with LNMIIT requirements. Forwarded to Admission Cell for course mapping and transfer credit award.',
+      transferCreditCreated: true,
+      transferCreditId: 'TC-2026-001'
+    },
+    {
+      requestId: 'EXP-2026-004',
+      studentId: '23UCS048',
+      requestType: 'CreditSubstitution',
+      courseCode: 'CS301',
+      description: 'Request for Credit Substitution: Completed 12-week NPTEL course "Database Design & Implementation" with 86% Elite score. Requesting equivalence for CS301 Database Management Systems.',
+      requestedBy: 'U003',
+      submittedDate: '2026-11-10T12:00:00.000Z',
+      status: 'Approved',
+      reviewedBy: 'U017',
+      reviewDate: '2026-11-12T15:30:00.000Z',
+      reviewNotes: 'Approved by Dean. Syllabus matches CS301. Forwarded to Admission Cell for transcript recording and transfer credit allocation.',
+      transferCreditCreated: false
+    },
+    {
+      requestId: uuidv4(),
+      studentId: '23UCS089',
+      requestType: 'Other',
+      description: 'Request for grade improvement opportunity for CD-graded courses due to documented chronic illness affecting performance across Semesters 1–4.',
+      requestedBy: 'U016',
+      submittedDate: '2026-11-01T08:00:00.000Z',
+      status: 'Rejected',
+      reviewedBy: 'U017',
+      reviewDate: '2026-11-05T10:00:00.000Z',
+      reviewNotes: 'Rejected. Policy does not allow retroactive grade improvement except in cases of proven examination malpractice. Student advised to focus on remaining semesters.'
+    }
+  ];
+
+  exceptionRequests.forEach(r => storageService.create('exceptionRequests', new ExceptionRequest(r)));
+
+  // 11. Seed sample Transfer Credits (Admission Cell - SRS FR-031 to FR-035)
+  const transferCredits = [
+    {
+      transferCreditId: 'TC-2026-001',
+      studentId: '24UCS101',
+      institutionName: 'TU Munich, Germany (Exchange)',
+      externalCourseName: 'Cloud Computing Architecture',
+      externalGrade: 'A',
+      credits: 4.0,
+      mappedCourseCode: 'CS402',
+      mappedCategory: 'Electives',
+      status: 'Approved',
+      approvedBy: 'admission@lnmiit.ac.in',
+      approvalDate: '2026-08-18T10:30:00.000Z',
+      remarks: 'Verified against official exchange transcript. Mapped to CS402 elective.',
+      exceptionRequestId: 'EXP-2026-003'
+    },
+    {
+      transferCreditId: 'TC-2026-002',
+      studentId: '24UCC175',
+      institutionName: 'NPTEL (IIT Madras)',
+      externalCourseName: 'Computer Architecture & Organization',
+      externalGrade: '84%',
+      credits: 4.0,
+      mappedCourseCode: 'CS202',
+      mappedCategory: 'Core Courses',
+      status: 'Pending',
+      approvedBy: null,
+      approvalDate: null,
+      remarks: 'NPTEL Elite Certificate submitted. Pending final equivalence verification.'
+    },
+    {
+      transferCreditId: 'TC-2026-003',
+      studentId: '23UCS048',
+      institutionName: 'BITS Pilani (Lateral Entry Transfer)',
+      externalCourseName: 'Discrete Mathematical Structures',
+      externalGrade: 'B',
+      credits: 4.0,
+      mappedCourseCode: 'MA201',
+      mappedCategory: 'Mathematics',
+      status: 'Pending',
+      approvedBy: null,
+      approvalDate: null,
+      remarks: 'Lateral transfer transcript evaluation in progress.'
+    }
+  ];
+
+  transferCredits.forEach(tc => storageService.create('transferCredits', new TransferCredit(tc).toJSON()));
+
+  // 12. Seed System Configuration (SRS §11.7, FR-050)
+  const initialConfig = new SystemConfig({
+    configId: 'CFG-001',
+    academicYear: '2026-27',
+    currentSemester: 'Odd Semester (2026)',
+    defaultCatalogYear: '2024',
+    atRiskCgpaThreshold: 5.0,
+    maxCreditsPerSemester: 26.0,
+    maintenanceMode: false,
+    updatedAt: new Date().toISOString(),
+    updatedBy: 'admin@lnmiit.ac.in'
+  });
+  storageService.create('systemConfig', initialConfig.toJSON());
+
+  // 13. Seed Sample Audit & Security Logs (SRS §11.7, §13.9, FR-051, UC-014)
+  const initialLogs = [
+    {
+      logId: 'LOG-2026-001',
+      userId: 'U019',
+      userEmail: 'admin@lnmiit.ac.in',
+      action: 'SYSTEM_INITIALIZATION',
+      entityType: 'SystemConfig',
+      entityId: 'CFG-001',
+      details: 'LNMIIT Degree Audit System initialized with 2026-27 academic session settings.',
+      timestamp: new Date(Date.now() - 86400000 * 3).toISOString()
+    },
+    {
+      logId: 'LOG-2026-002',
+      userId: 'U012',
+      userEmail: 'registrar@lnmiit.ac.in',
+      action: 'CATALOG_PUBLISHED',
+      entityType: 'Catalog',
+      entityId: 'CAT-2024-CSE',
+      details: 'Published 2024 B.Tech CSE Degree Requirements Catalog.',
+      timestamp: new Date(Date.now() - 86400000 * 2).toISOString()
+    },
+    {
+      logId: 'LOG-2026-003',
+      userId: 'U017',
+      userEmail: 'dean.academics@lnmiit.ac.in',
+      action: 'EXCEPTION_DECISION',
+      entityType: 'ExceptionRequest',
+      entityId: 'EXP-2026-003',
+      details: 'Approved CreditSubstitution request for student 24UCS101 (TU Munich Coursework).',
+      timestamp: new Date(Date.now() - 86400000 * 1).toISOString()
+    },
+    {
+      logId: 'LOG-2026-004',
+      userId: 'U018',
+      userEmail: 'admission@lnmiit.ac.in',
+      action: 'TRANSFER_CREDIT_AWARDED',
+      entityType: 'TransferCredit',
+      entityId: 'TC-2026-001',
+      details: 'Awarded 4.0 transfer credits to 24UCS101 for Cloud Computing Architecture.',
+      timestamp: new Date(Date.now() - 3600000 * 5).toISOString()
+    },
+    {
+      logId: 'LOG-2026-005',
+      userId: 'U019',
+      userEmail: 'admin@lnmiit.ac.in',
+      action: 'SECURITY_AUDIT',
+      entityType: 'User',
+      entityId: 'ALL',
+      details: 'Routine administrative security check completed. All 19 institutional accounts active.',
+      timestamp: new Date(Date.now() - 3600000 * 1).toISOString()
+    }
+  ];
+
+  initialLogs.forEach(l => storageService.create('systemLogs', new SystemLog(l).toJSON()));
 
   const stats = storageService.getStats();
   console.log('Database seeded successfully!');

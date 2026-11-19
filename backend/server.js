@@ -18,6 +18,9 @@ const advisorRoutes = require('./src/routes/advisorRoutes');
 const registrarRoutes = require('./src/routes/registrarRoutes');
 const catalogRoutes = require('./src/routes/catalogRoutes');
 const assignmentRoutes = require('./src/routes/assignmentRoutes');
+const deanRoutes = require('./src/routes/deanRoutes');
+const admissionRoutes = require('./src/routes/admissionRoutes');
+const adminRoutes = require('./src/routes/adminRoutes');
 
 // Import middleware
 const errorHandler = require('./src/middleware/errorHandler');
@@ -44,6 +47,9 @@ const seedReady = seedDatabase()
     console.log('  Student: 24ucs101@lnmiit.ac.in / password123');
     console.log('  Advisor: dr.sharma@lnmiit.ac.in / password123');
     console.log('  Registrar: registrar@lnmiit.ac.in / password123');
+    console.log('  Dean: dean.academics@lnmiit.ac.in / password123');
+    console.log('  Admission Cell: admission@lnmiit.ac.in / password123');
+    console.log('  System Admin: admin@lnmiit.ac.in / password123');
     console.log('\n======================================\n');
   })
   .catch(err => {
@@ -72,6 +78,9 @@ app.use('/api/advisors', advisorRoutes);
 app.use('/api/registrar', registrarRoutes);
 app.use('/api/catalogs', catalogRoutes);
 app.use('/api/assignments', assignmentRoutes);
+app.use('/api/dean', deanRoutes);
+app.use('/api/admission', admissionRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -28,6 +28,12 @@ export default function Login() {
         navigate('/advisor/at-risk');
       } else if (user.role === 'RegistrarStaff') {
         navigate('/registrar/dashboard');
+      } else if (user.role === 'Dean') {
+        navigate('/dean/dashboard');
+      } else if (user.role === 'AdmissionCell') {
+        navigate('/admission/credits');
+      } else if (user.role === 'SystemAdmin' || user.role === 'Admin') {
+        navigate('/admin/dashboard');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password');
@@ -113,11 +119,14 @@ export default function Login() {
 
             <div className="mt-6 pt-6 border-t border-gray-200">
               <p className="text-sm text-gray-600 text-center mb-3">Test Credentials:</p>
-              <div className="space-y-2 text-xs bg-gray-50 p-3 rounded-md">
+              <div className="space-y-1.5 text-xs bg-gray-50 p-3 rounded-md">
                 <p><span className="font-medium">Student:</span> 24ucs101@lnmiit.ac.in</p>
                 <p><span className="font-medium">Advisor:</span> dr.sharma@lnmiit.ac.in</p>
                 <p><span className="font-medium">Registrar:</span> registrar@lnmiit.ac.in</p>
-                <p className="mt-2"><span className="font-medium">Password:</span> password123</p>
+                <p><span className="font-medium">Dean:</span> dean.academics@lnmiit.ac.in</p>
+                <p><span className="font-medium">Admission Cell:</span> admission@lnmiit.ac.in</p>
+                <p><span className="font-medium">System Admin:</span> admin@lnmiit.ac.in</p>
+                <p className="mt-2 text-gray-500"><span className="font-medium">Password:</span> password123</p>
               </div>
             </div>
           </CardContent>

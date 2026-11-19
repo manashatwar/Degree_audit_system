@@ -77,13 +77,65 @@ class AuditService {
     // Get transcripts
     const transcripts = storageService.findTranscriptsByStudentId(studentId);
 
+    // Fetch approved exception requests for this student (Dean approved waivers/substitutions)
+    const approvedExceptions = (storageService.findAll('exceptionRequests') || [])
+      .filter(r => r.studentId === studentId && r.status === 'Approved');
+
+    // Fetch approved transfer credits for this student (Admission Cell evaluated)
+    const approvedTransferCredits = (storageService.findAll('transferCredits') || [])
+      .filter(tc => tc.studentId === studentId && tc.status === 'Approved');
+
+    // Collect waived course codes from approved exceptions (Course waivers)
+    // Note: CreditSubstitutions require Admission Cell verification and are awarded via approvedTransferCredits
+    const waivedCourseCodes = new Set();
+    approvedExceptions.forEach(e => {
+      if (e.requestType !== 'CreditSubstitution') {
+        if (e.courseCode) {
+          waivedCourseCodes.add(e.courseCode.toUpperCase());
+        }
+        const match = e.description && e.description.match(/\b([A-Z]{2}\d{3})\b/);
+        if (match) {
+          waivedCourseCodes.add(match[1].toUpperCase());
+        }
+      }
+    });
+
+    // Collect mapped course codes from approved transfer credits
+    const transferCourseCodes = new Set();
+    approvedTransferCredits.forEach(tc => {
+      if (tc.mappedCourseCode) {
+        transferCourseCodes.add(tc.mappedCourseCode.toUpperCase());
+      }
+    });
+
     // Calculate CGPA
     const CGPA = parseFloat(this.calculateCGPA(transcripts));
 
-    // Calculate total credits earned (only passing grades D or higher)
+    // Calculate total waived credits not already counted in passing transcripts
+    const passedCourses = new Set(
+      transcripts.filter(t => this.isPassing(t.grade)).map(t => t.courseCode.toUpperCase())
+    );
+    let totalWaivedCredits = 0;
+    waivedCourseCodes.forEach(code => {
+      if (!passedCourses.has(code)) {
+        const cObj = storageService.findById('courses', 'courseCode', code);
+        totalWaivedCredits += cObj ? cObj.credits : 4.0;
+      }
+    });
+
+    // Calculate total transfer credits earned
+    let totalTransferCredits = 0;
+    approvedTransferCredits.forEach(tc => {
+      const code = tc.mappedCourseCode ? tc.mappedCourseCode.toUpperCase() : null;
+      if (!code || !passedCourses.has(code)) {
+        totalTransferCredits += Number(tc.credits) || 4.0;
+      }
+    });
+
+    // Calculate total credits earned (passing grades + approved Dean waivers + approved transfer credits)
     const totalCreditsEarned = transcripts
       .filter(t => this.isPassing(t.grade))
-      .reduce((sum, t) => sum + t.creditsEarned, 0);
+      .reduce((sum, t) => sum + t.creditsEarned, 0) + totalWaivedCredits + totalTransferCredits;
 
     // Analyze each requirement category
     const categoryProgress = requirements.map(req => {
@@ -91,7 +143,30 @@ class AuditService {
         req.courseList.includes(t.courseCode) && this.isPassing(t.grade)
       );
 
-      const creditsEarned = relevantTranscripts.reduce((sum, t) => sum + t.creditsEarned, 0);
+      // Check if any courses in req.courseList were waived by Dean approval
+      const passedInReq = new Set(relevantTranscripts.map(t => t.courseCode.toUpperCase()));
+      const waivedInReq = (req.courseList || []).filter(c => waivedCourseCodes.has(c.toUpperCase()) && !passedInReq.has(c.toUpperCase()));
+      let categoryWaivedCredits = 0;
+      waivedInReq.forEach(cCode => {
+        const cObj = storageService.findById('courses', 'courseCode', cCode);
+        categoryWaivedCredits += cObj ? cObj.credits : 4.0;
+      });
+
+      // Check if any courses in req.courseList were satisfied by approved transfer credits
+      const transferInReq = (req.courseList || []).filter(c => transferCourseCodes.has(c.toUpperCase()) && !passedInReq.has(c.toUpperCase()) && !waivedInReq.includes(c));
+      let categoryTransferCredits = 0;
+      transferInReq.forEach(cCode => {
+        const tc = approvedTransferCredits.find(t => t.mappedCourseCode && t.mappedCourseCode.toUpperCase() === cCode.toUpperCase());
+        categoryTransferCredits += tc ? Number(tc.credits) : 4.0;
+      });
+
+      // If category name matches mappedCategory of generic transfer credits (e.g. Open Electives)
+      const genericTransferCredits = approvedTransferCredits
+        .filter(tc => !tc.mappedCourseCode && tc.mappedCategory && tc.mappedCategory.toLowerCase() === req.category.toLowerCase())
+        .reduce((sum, tc) => sum + (Number(tc.credits) || 0), 0);
+
+      const creditsEarned = relevantTranscripts.reduce((sum, t) => sum + t.creditsEarned, 0) + 
+                            categoryWaivedCredits + categoryTransferCredits + genericTransferCredits;
       const percentComplete = req.minimumCredits > 0 
         ? Math.min(100, Math.round((creditsEarned / req.minimumCredits) * 100))
         : 0;
@@ -103,7 +178,9 @@ class AuditService {
         creditsRequired: req.minimumCredits,
         creditsEarned: creditsEarned,
         percentComplete: percentComplete,
-        status: creditsEarned >= req.minimumCredits ? 'Satisfied' : 'In Progress'
+        status: creditsEarned >= req.minimumCredits ? 'Satisfied' : 'In Progress',
+        waivedCourses: waivedInReq,
+        transferCourses: transferInReq
       };
     });
 
@@ -154,7 +231,9 @@ class AuditService {
       categoryProgress: categoryProgress,
       completedCourses: completedCourses,
       inProgressCourses: inProgressCourses,
-      remainingRequirements: remainingRequirements
+      remainingRequirements: remainingRequirements,
+      approvedExceptions: approvedExceptions,
+      transferCredits: approvedTransferCredits
     });
 
     // Save audit report

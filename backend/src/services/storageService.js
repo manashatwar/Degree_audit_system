@@ -11,6 +11,7 @@ class StorageService {
       students: [],
       facultyAdvisors: [],
       registrarStaff: [],
+      deans: [],
       courses: [],
       transcripts: [],
       catalogs: [],
@@ -18,7 +19,12 @@ class StorageService {
       auditReports: [],
       advisorAssignments: [],
       atRiskAssessments: [],
-      transcriptImports: []
+      transcriptImports: [],
+      exceptionRequests: [],
+      transferCredits: [],
+      admissionStaff: [],
+      systemLogs: [],
+      systemConfig: []
     };
   }
 
@@ -77,12 +83,28 @@ class StorageService {
     return this.storage.registrarStaff.find(registrar => registrar.userId === userId);
   }
 
+  findDeanByUserId(userId) {
+    return this.storage.deans.find(dean => dean.userId === userId);
+  }
+
+  findAdmissionOfficerByUserId(userId) {
+    return (this.storage.admissionStaff || []).find(staff => staff.userId === userId);
+  }
+
+  findTransferCreditsByStudentId(studentId) {
+    return (this.storage.transferCredits || []).filter(t => t.studentId === studentId);
+  }
+
   findTranscriptsByStudentId(studentId) {
     return this.storage.transcripts.filter(transcript => transcript.studentId === studentId);
   }
 
   findCatalogByYear(catalogYear) {
     return this.storage.catalogs.find(catalog => catalog.catalogYear === catalogYear);
+  }
+
+  findCatalogById(catalogId) {
+    return this.storage.catalogs.find(c => c.catalogId === catalogId);
   }
 
   findRequirementsByCatalogId(catalogId) {
@@ -104,6 +126,26 @@ class StorageService {
       .filter(audit => audit.studentId === studentId)
       .sort((a, b) => new Date(b.generatedDate) - new Date(a.generatedDate));
     return audits[0] || null;
+  }
+
+  // Log system activity for immutable audit trail (SRS §11.7, FR-051)
+  logActivity(userId, userEmail, action, details, entityType = 'SYSTEM', entityId = null) {
+    const log = {
+      logId: `LOG-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+      userId: userId || 'SYSTEM',
+      userEmail: userEmail || 'system@lnmiit.ac.in',
+      action,
+      entityType,
+      entityId,
+      details: typeof details === 'object' ? JSON.stringify(details) : (details || ''),
+      timestamp: new Date().toISOString()
+    };
+    if (!this.storage.systemLogs) this.storage.systemLogs = [];
+    this.storage.systemLogs.unshift(log);
+    if (this.storage.systemLogs.length > 500) {
+      this.storage.systemLogs.pop();
+    }
+    return log;
   }
 
   // Clear all data (for testing)

@@ -23,6 +23,8 @@ class AuditReport {
     this.completedCourses = data.completedCourses || [];
     this.inProgressCourses = data.inProgressCourses || [];
     this.remainingRequirements = data.remainingRequirements || [];
+    this.approvedExceptions = data.approvedExceptions || [];
+    this.transferCredits = data.transferCredits || [];
   }
 
   toJSON() {
@@ -44,7 +46,9 @@ class AuditReport {
       categoryProgress: this.categoryProgress,
       completedCourses: this.completedCourses,
       inProgressCourses: this.inProgressCourses,
-      remainingRequirements: this.remainingRequirements
+      remainingRequirements: this.remainingRequirements,
+      approvedExceptions: this.approvedExceptions,
+      transferCredits: this.transferCredits
     };
   }
 }

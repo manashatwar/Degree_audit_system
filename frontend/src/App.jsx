@@ -4,10 +4,20 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import StudentDashboard from './pages/student/Dashboard';
 import StudentAudit from './pages/student/Audit';
+import StudentExceptions from './pages/student/Exceptions';
 import AdvisorAtRisk from './pages/advisor/AtRisk';
 import RegistrarDashboard from './pages/registrar/Dashboard';
 import RegistrarImport from './pages/registrar/Import';
 import RegistrarManageAdvisors from './pages/registrar/ManageAdvisors';
+import DeanDashboard from './pages/dean/Dashboard';
+import DeanExceptions from './pages/dean/Exceptions';
+import CatalogManagement from './pages/registrar/CatalogManagement';
+import CatalogYearAssignment from './pages/registrar/CatalogYearAssignment';
+import AdmissionDashboard from './pages/admission/Dashboard';
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminUsers from './pages/admin/Users';
+import AdminSettings from './pages/admin/Settings';
+import AdminLogs from './pages/admin/Logs';
 
 function PrivateRoute({ children, allowedRoles }) {
   const { user, loading } = useAuth();
@@ -60,6 +70,15 @@ function App() {
           />
 
           <Route
+            path="/student/exceptions"
+            element={
+              <PrivateRoute allowedRoles={['Student']}>
+                <StudentExceptions />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
             path="/advisor/at-risk"
             element={
               <PrivateRoute allowedRoles={['FacultyAdvisor']}>
@@ -95,7 +114,87 @@ function App() {
             }
           />
 
+          <Route
+            path="/registrar/catalogs"
+            element={
+              <PrivateRoute allowedRoles={['RegistrarStaff']}>
+                <CatalogManagement />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/registrar/catalog-year"
+            element={
+              <PrivateRoute allowedRoles={['RegistrarStaff']}>
+                <CatalogYearAssignment />
+              </PrivateRoute>
+            }
+          />
+
           <Route path="/" element={<Navigate to="/login" replace />} />
+
+          {/* Dean Routes */}
+          <Route
+            path="/dean/dashboard"
+            element={
+              <PrivateRoute allowedRoles={['Dean']}>
+                <DeanDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/dean/exceptions"
+            element={
+              <PrivateRoute allowedRoles={['Dean']}>
+                <DeanExceptions />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Admission Cell Routes */}
+          <Route
+            path="/admission/credits"
+            element={
+              <PrivateRoute allowedRoles={['AdmissionCell']}>
+                <AdmissionDashboard />
+              </PrivateRoute>
+            }
+          />
+
+          {/* System Administrator Routes (SRS §11.7, §13.9) */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <PrivateRoute allowedRoles={['SystemAdmin', 'Admin']}>
+                <AdminDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <PrivateRoute allowedRoles={['SystemAdmin', 'Admin']}>
+                <AdminUsers />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/settings"
+            element={
+              <PrivateRoute allowedRoles={['SystemAdmin', 'Admin']}>
+                <AdminSettings />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/logs"
+            element={
+              <PrivateRoute allowedRoles={['SystemAdmin', 'Admin']}>
+                <AdminLogs />
+              </PrivateRoute>
+            }
+          />
 
           <Route
             path="/unauthorized"
