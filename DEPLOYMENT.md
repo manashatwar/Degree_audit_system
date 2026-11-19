@@ -1,4 +1,4 @@
-# 🚀 LNMIIT Degree Audit System - Deployment Guide
+#  LNMIIT Degree Audit System - Deployment Guide
 
 ## Overview
 This guide covers deploying the full-stack application with:
@@ -7,7 +7,7 @@ This guide covers deploying the full-stack application with:
 
 ---
 
-## 📋 Prerequisites
+##  Prerequisites
 
 1. **Vercel Account**: [Sign up at vercel.com](https://vercel.com)
 2. **MongoDB Atlas**: [Create free cluster at mongodb.com](https://www.mongodb.com/cloud/atlas)
@@ -18,7 +18,7 @@ This guide covers deploying the full-stack application with:
 
 ---
 
-## 🎯 Deployment Steps
+##  Deployment Steps
 
 ### Step 1: Deploy Backend
 
@@ -165,7 +165,7 @@ curl -X POST https://your-backend-url/api/seed
 
 ---
 
-## 🧪 Testing Deployment
+##  Testing Deployment
 
 ### Test Accounts
 
@@ -195,7 +195,7 @@ After seeding, test with these accounts:
 
 ---
 
-## 🔐 Security Best Practices
+##  Security Best Practices
 
 1. **Change Default Passwords** after first login
 2. **Use Strong JWT Secret**: Generate with:
@@ -209,7 +209,7 @@ After seeding, test with these accounts:
 
 ---
 
-## 📊 Monitoring
+##  Monitoring
 
 ### Vercel Analytics
 - Enable in Vercel Dashboard → Project → Analytics
@@ -222,7 +222,7 @@ After seeding, test with these accounts:
 
 ---
 
-## 🔄 Continuous Deployment
+##  Continuous Deployment
 
 ### Auto-deploy on Git Push
 
@@ -236,7 +236,7 @@ After seeding, test with these accounts:
 
 ---
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### Frontend can't connect to backend
 **Solution**: Check VITE_API_URL environment variable in Vercel
@@ -274,7 +274,7 @@ After seeding, test with these accounts:
 
 ---
 
-## 🎉 Deployment Complete!
+##  Deployment Complete!
 
 Your LNMIIT Degree Audit System is now live and accessible globally!
 
@@ -287,11 +287,11 @@ Your LNMIIT Degree Audit System is now live and accessible globally!
 
 ---
 
-## 📞 Support
+##  Support
 
 For issues or questions:
 - Check troubleshooting section above
 - Review Vercel/Railway documentation
 - Contact your hosting provider support
 
-**Happy Deploying! 🚀**
+**Happy Deploying! **
