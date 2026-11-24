@@ -1,42 +1,45 @@
 # LNMIIT Degree Audit System
 
-A comprehensive web-based degree audit system for The LNM Institute of Information Technology, Jaipur. This system automates academic progress tracking, degree requirement verification, and at-risk student identification.
-
-
+A comprehensive web-based degree audit system for The LNM Institute of Information Technology, Jaipur. This system automates academic progress tracking, degree requirement verification, exception management, transfer credit processing, and administrative operations across **7 user roles**.
 
 ## Project Overview
 
-This prototype demonstrates three core use cases:
+This system implements the complete Software Requirements Specification (SRS) covering:
 
-1. **UC-002: View Degree Audit** (Student) - Students can view their complete degree audit with progress tracking, CGPA calculation, and graduation eligibility status.
-
-2. **UC-005: Identify At-Risk Students** (Faculty Advisor) - Faculty advisors can identify and monitor students who are academically at-risk based on multiple criteria.
-
-3. **UC-006: Import Student Transcripts** (Registrar) - Registrar staff can bulk import student transcript data with validation and automatic audit recalculation.
+1. **Student Portal** — View degree audit, track progress, request exceptions (course waivers, grade exceptions, credit substitutions)
+2. **Faculty Advisor Dashboard** — Monitor advisees, identify at-risk students, review student audits
+3. **HOD Dashboard** — Department-level analytics and oversight
+4. **Registrar Office** — Import transcripts, manage catalogs, verify graduation clearance, assign advisors
+5. **Dean of Academics** — Review and approve/reject academic exception requests
+6. **Admission Cell** — Process dean-approved credit substitutions, record transfer credits
+7. **System Administrator** — User management, system configuration, audit logs
 
 ## Features
 
-- Role-based authentication (Student, Faculty Advisor, Registrar)
-- Real-time degree audit calculation
-- CGPA and credit tracking
-- At-risk student identification with 4 criteria
-- CSV transcript import with validation
-- Professional, clean UI using shadcn/ui
+- **7-role authentication** with JWT-based access control
+- Real-time degree audit calculation with CGPA and category-wise progress
+- At-risk student identification with 4-criteria risk scoring
+- CSV transcript import with validation and auto-audit recalculation
+- **Exception Request Pipeline**: Student → Dean → (Admission Cell for credit substitutions)
+- **Transfer Credit Management** with external institution tracking
+- **System Admin Panel**: User CRUD, role management, system configuration, immutable audit logs
+- Professional UI with `#1e2d4a` navy theme, Tailwind CSS, card-based layouts
 - Responsive design for all screen sizes
 
 ## Technology Stack
 
 ### Backend
 - Node.js with Express.js
-- JWT authentication
-- In-memory data storage (prototype)
+- JWT authentication & role-based authorization
+- In-memory data storage (prototype — easily replaceable with database)
 - bcryptjs for password hashing
+- Centralized audit logging
 
 ### Frontend
 - React 18 with Vite
-- shadcn/ui components
 - Tailwind CSS
-- React Router
+- Lucide React icons
+- React Router with protected routes
 - Axios for API calls
 - PapaParse for CSV parsing
 
@@ -44,217 +47,157 @@ This prototype demonstrates three core use cases:
 
 ```
 Degree_audit_system/
-├── .kiro/
-│   └── documentation/          # Complete system documentation
-│       ├── requirements/       # Use cases and project overview
-│       ├── design/            # Class and interaction models
-│       ├── architecture/      # Component architecture
-│       └── implementation/    # Implementation plan
 ├── backend/
 │   ├── src/
 │   │   ├── controllers/       # Request handlers
-│   │   ├── routes/           # API routes
-│   │   ├── services/         # Business logic
-│   │   ├── models/           # Data models
-│   │   ├── middleware/       # Auth, error handling
-│   │   ├── utils/            # Utilities
-│   │   └── data/             # Seed data
-│   └── server.js             # Main entry point
+│   │   │   ├── authController.js
+│   │   │   ├── studentController.js
+│   │   │   ├── advisorController.js
+│   │   │   ├── registrarController.js
+│   │   │   ├── deanController.js
+│   │   │   ├── admissionController.js
+│   │   │   └── adminController.js
+│   │   ├── routes/            # API route definitions
+│   │   ├── services/          # Business logic
+│   │   │   ├── authService.js
+│   │   │   ├── auditService.js
+│   │   │   ├── importService.js
+│   │   │   └── storageService.js
+│   │   ├── models/            # Data models
+│   │   ├── middleware/        # Auth & error handling
+│   │   ├── utils/             # JWT, validation utilities
+│   │   └── data/              # Seed data (19 users, 39 courses, 73 transcripts)
+│   └── server.js              # Main entry point
 ├── frontend/
 │   ├── src/
-│   │   ├── components/       # Reusable components
-│   │   │   └── ui/          # shadcn/ui components
-│   │   ├── pages/           # Page components
-│   │   │   ├── student/     # Student dashboard
-│   │   │   ├── advisor/     # Advisor dashboard
-│   │   │   └── registrar/   # Registrar dashboard
-│   │   ├── services/        # API services
-│   │   ├── contexts/        # React contexts
-│   │   └── utils/           # Utility functions
-│   └── public/              # Static assets
-└── README.md
+│   │   ├── components/        # Layout, PrivateRoute
+│   │   ├── pages/
+│   │   │   ├── Login.jsx      # Unified login page
+│   │   │   ├── student/       # Dashboard, Exceptions
+│   │   │   ├── advisor/       # Dashboard, StudentAudit
+│   │   │   ├── registrar/     # Dashboard (import, catalogs, assignments)
+│   │   │   ├── dean/          # Dashboard (exception approvals)
+│   │   │   ├── admission/     # Dashboard (transfer credits, dean approvals)
+│   │   │   └── admin/         # Dashboard, Users, Settings, Logs
+│   │   ├── services/          # API service modules
+│   │   ├── contexts/          # AuthContext
+│   │   └── utils/
+│   └── public/
+├── README.md
+├── QUICKSTART.md
+├── DEPLOYMENT.md
+└── backend/API_DOCUMENTATION.md
 ```
 
-## Installation
+## Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
-- npm or yarn
+- Node.js 18+
+- npm
 
-### Backend Setup
+### 1. Install Dependencies
 
-1. Navigate to backend directory:
+```bash
+# Backend
+cd backend
+npm install
+
+# Frontend
+cd ../frontend
+npm install
+```
+
+### 2. Start Backend Server (Terminal 1)
+
 ```bash
 cd backend
+node server.js
 ```
+Backend runs on **http://localhost:5000**
 
-2. Install dependencies:
-```bash
-npm install
-```
+### 3. Start Frontend Server (Terminal 2)
 
-3. Start the server:
-```bash
-npm run dev
-```
-
-Server will run on `http://localhost:5000`
-
-### Frontend Setup
-
-1. Navigate to frontend directory:
 ```bash
 cd frontend
+npx vite --host
 ```
+Frontend runs on **http://localhost:5173**
 
-2. Install dependencies:
-```bash
-npm install
-```
+### 4. Open Browser
 
-3. Start the development server:
-```bash
-npm run dev
-```
-
-Frontend will run on `http://localhost:5173`
+Navigate to **http://localhost:5173**
 
 ## Test Credentials
 
-All users have password: **password123**
+All accounts use password: **`password123`**
 
-### Student Account
-- **Email**: rohan.mehta@lnmiit.ac.in
-- **ID**: S1001
-- **Features**: View degree audit, track progress, check graduation eligibility
+| Role | Email | Features |
+|------|-------|----------|
+| **Student** | `24ucs101@lnmiit.ac.in` | View audit, track progress, request exceptions |
+| **Faculty Advisor** | `dr.sharma@lnmiit.ac.in` | View advisees, at-risk students, student audits |
+| **Registrar** | `registrar@lnmiit.ac.in` | Import transcripts, manage catalogs, assign advisors |
+| **Dean** | `dean.academics@lnmiit.ac.in` | Review/approve exception requests |
+| **Admission Cell** | `admission@lnmiit.ac.in` | Process transfer credits, dean-approved substitutions |
+| **System Admin** | `admin@lnmiit.ac.in` | User management, system settings, audit logs |
 
-### Faculty Advisor Account
-- **Email**: dr.sharma@lnmiit.ac.in
-- **ID**: A001
-- **Features**: View advisees, identify at-risk students, view student audits
+## User Role Details
 
-### Registrar Account
-- **Email**: registrar@lnmiit.ac.in
-- **ID**: R001
-- **Features**: Import transcripts, validate data, manage academic records
+### Student
+- **Dashboard**: CGPA, credits earned/required, progress percentage, graduation eligibility
+- **Degree Audit**: Category-wise progress (Core, Electives, Lab, Humanities, etc.)
+- **Exceptions**: Submit course waivers, grade exceptions, and credit substitutions
+- **Pipeline Tracker**: Visual 2-step tracker for credit substitution requests (Dean → Admission Cell)
 
-## Usage Guide
+### Faculty Advisor
+- **Advisee Overview**: Total advisees with CGPA and credit stats
+- **At-Risk Identification**: 4-criteria risk scoring (CGPA, credit deficiency, missing cores, inactivity)
+- **Student Audit View**: Detailed audit for any assigned advisee
 
-### For Students
+### Registrar Office
+- **Transcript Import**: CSV upload with validation, preview, and bulk import
+- **Catalog Management**: View course catalogs and degree requirements
+- **Advisor Assignments**: Manage student-advisor mappings
+- **Student Records**: View all student records and audit reports
 
-1. Login with student credentials
-2. Dashboard displays:
-   - Current CGPA and credits earned
-   - Progress towards degree completion
-   - Graduation eligibility status
-   - Category-wise requirement progress
-   - Completed courses list
-   - Remaining requirements
+### Dean of Academics
+- **Exception Queue**: Review pending exception requests from students
+- **Approve/Reject**: With detailed notes and justification
+- **Policy Enforcement**: Course waivers, grade exceptions, credit substitutions
 
-### For Faculty Advisors
+### Admission Cell
+- **Transfer Credits**: Record external credits with institution, grade, and course mapping
+- **Dean Approvals Queue**: Process dean-approved credit substitutions
+- **Evaluation**: Approve immediately or flag for review
 
-1. Login with advisor credentials
-2. Dashboard displays:
-   - Total advisees count
-   - At-risk students count
-   - List of at-risk students with risk indicators
-3. Click "View Audit" on any student to see detailed academic progress
-4. At-risk criteria:
-   - CGPA below 6.0
-   - Credit deficiency > 6 credits
-   - Missing required core courses
-   - No academic activity in last 6 months
-
-### For Registrar
-
-1. Login with registrar credentials
-2. Upload CSV file with transcript records
-3. System validates:
-   - Student IDs exist
-   - Course codes are valid
-   - Grades are in range (0-10)
-   - Credits are positive numbers
-4. Preview validation results
-5. Confirm import (only valid records)
-6. System automatically recalculates affected student audits
-
-### CSV Format for Import
-
-```csv
-studentId,courseCode,semester,grade,credits
-S1001,CS401,Fall 2025,8.5,4
-S1002,CS402,Fall 2025,7.8,4
-```
-
-**Required columns:**
-- studentId - Student identification number
-- courseCode - Course code (e.g., CS301)
-- semester - Semester name (e.g., Fall 2025)
-- grade - Numeric grade (0-10)
-- credits - Credit hours (positive integer)
-
-## Sample Data
-
-The system includes pre-loaded sample data:
-- 11 users (8 students, 2 advisors, 1 registrar)
-- 16 courses across departments
-- 2 catalogs (2023, 2024)
-- 20+ transcript records
-- Multiple at-risk scenarios
-
-## API Documentation
-
-Complete API documentation available at: `backend/API_DOCUMENTATION.md`
-
-**Key endpoints:**
-- `POST /api/auth/login` - User authentication
-- `GET /api/students/:id/audit` - Get degree audit
-- `GET /api/advisors/:id/at-risk` - Get at-risk students
-- `POST /api/registrar/import/preview` - Preview import data
-- `POST /api/registrar/import/confirm` - Execute import
-
-## Design Principles
-
-### UI/UX
-- Clean, professional design inspired by modern college portals
-- LNMIIT campus branding and imagery
-- Intuitive navigation with role-based menus
-- Responsive layouts for desktop and mobile
-- Accessible components following WCAG guidelines
-
-### Architecture
-- Component-based frontend with React
-- RESTful API with Express
-- Service layer for business logic
-- In-memory storage (prototype) - easily replaceable with database
-- JWT-based authentication and authorization
-
-### Code Quality
-- Consistent naming conventions
-- Modular component structure
-- Reusable shadcn/ui components
-- Error handling and validation
-- Loading states and user feedback
+### System Administrator
+- **User Management**: Create, update, deactivate users across all 7 roles
+- **Role Assignment**: Change user roles, lock/unlock accounts, reset passwords
+- **System Configuration**: Academic year, semester, catalog year, at-risk threshold, max credits, maintenance mode
+- **Audit Logs**: Immutable log of all sensitive operations with search and filter
 
 ## Business Rules
 
 ### Audit Calculation
-- Only courses with grades ≥ 6.0 count toward requirements
-- CGPA calculated from all passed courses
+- Only courses with grades ≥ 6.0 count toward degree requirements
+- CGPA calculated from all attempted courses
 - Progress tracked by requirement category
 - Graduation requires all minimum credits met and CGPA ≥ 6.0
 
+### Credit Substitution Pipeline
+1. Student submits credit substitution request
+2. Dean reviews and approves/rejects
+3. If approved → appears in Admission Cell queue
+4. Admission Cell records transfer credit with external institution details
+5. Degree audit automatically recalculates with new credits
+
 ### At-Risk Assessment
 Risk scores calculated based on:
-- CGPA < 6.0 (score +3)
+- CGPA < threshold (score +3)
 - Credit deficiency > 6 credits (score +2)
 - Missing core courses (score +2)
 - No activity in 6 months (score +3)
 
-Risk levels:
-- **High**: score ≥ 5
-- **Medium**: score ≥ 3
-- **Low**: score < 3
+Risk levels: **High** (≥5), **Medium** (≥3), **Low** (<3)
 
 ### Import Validation
 - Student ID must exist in system
@@ -263,33 +206,88 @@ Risk levels:
 - Credits must be positive
 - Duplicate records are rejected
 
-## Future Enhancements
+## Sample Data
 
-- Database integration (MySQL/PostgreSQL)
-- Email notifications for at-risk students
-- PDF audit report generation
-- Historical audit comparison
-- Advisor appointment scheduling
-- Course registration integration
-- Mobile native applications
-- Advanced analytics and reporting
+The system initializes with pre-loaded data on every startup:
 
-## Documentation
+| Entity | Count |
+|--------|-------|
+| Users | 19 |
+| Students | 12 |
+| Faculty Advisors | 3 |
+| Courses | 39 |
+| Transcripts | 73 |
+| Catalogs | 6 |
+| Requirements | 24 |
+| Exception Requests | 5 |
+| Transfer Credits | 3 |
+| System Logs | 5 |
 
-Complete system documentation available in `.kiro/documentation/`:
-- Project overview and vision
-- Detailed use case specifications
-- Class design and data models
-- Component architecture
-- Interaction models
-- Implementation plan
+## API Documentation
+
+Complete API documentation: [`backend/API_DOCUMENTATION.md`](backend/API_DOCUMENTATION.md)
+
+**Key endpoint groups:**
+- `POST /api/auth/login` — Authentication
+- `GET /api/students/:id/audit` — Degree audit
+- `GET /api/advisors/:id/at-risk` — At-risk students
+- `POST /api/registrar/import/confirm` — Transcript import
+- `GET /api/dean/exceptions` — Exception requests
+- `POST /api/admission/transfer-credits` — Record transfer credits
+- `GET /api/admin/users` — User management
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│          Frontend (React + Vite)             │
+│          http://localhost:5173               │
+│                                             │
+│  7 Role Dashboards:                         │
+│  Student | Advisor | Registrar | Dean       │
+│  Admission Cell | System Admin | HOD        │
+└──────────────────┬──────────────────────────┘
+                   │ HTTP/REST API (Axios)
+┌──────────────────▼──────────────────────────┐
+│          Backend (Node.js + Express)         │
+│          http://localhost:5000/api           │
+│                                             │
+│  Auth (JWT) | Audit Engine | Import Engine  │
+│  Exception Workflow | Transfer Credits      │
+│  Admin CRUD | Audit Logging                 │
+└──────────────────┬──────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────┐
+│        In-Memory Storage                     │
+│        (Seed Data on Startup)               │
+│                                             │
+│  19 Users | 12 Students | 39 Courses        │
+│  73 Transcripts | 6 Catalogs | 24 Reqs      │
+│  5 Exceptions | 3 Transfer Credits          │
+│  5 System Logs | 1 System Config            │
+└─────────────────────────────────────────────┘
+```
+
+## Notes
+
+- **In-memory storage**: All data resets on server restart. Seed data repopulates automatically.
+- **Prototype**: For production, replace `storageService` with a database (MySQL/PostgreSQL/MongoDB).
+- **JWT Secret**: Change in production via environment variable.
+- **CORS**: Currently allows all origins — restrict for production.
+
+## Course Information
+
+- **Course**: CS314 — Software Development Laboratory
+- **Institution**: The LNM Institute of Information Technology, Jaipur
+
+## Team
+
+**Team T030**
+- Hatwar Manas Vinod (24UCC175)
+- Dhruv Gupta (24UCC176)
+- Aradhya Raina (24UCC177)
+- Kota Sai Vignesh (24UCC178)
 
 ## License
 
 © 2026 The LNM Institute of Information Technology, Jaipur. All rights reserved.
-
-This project is developed as part of the Software Development Laboratory (CS314) course.
-
-## Support
-
-For questions or issues, contact Team T030 members or refer to the comprehensive documentation in the `.docs/documentation/` directory.

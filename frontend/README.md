@@ -1,31 +1,24 @@
 # LNMIIT Degree Audit System - Frontend
 
-React-based frontend application for the LNMIIT Degree Audit System.
+React-based frontend application for the LNMIIT Degree Audit System with 7 role-based dashboards.
 
 ## Technology Stack
 
-- React 18
-- Vite (build tool)
-- React Router (navigation)
+- React 18 with Vite
 - Tailwind CSS (styling)
-- shadcn/ui (component library)
+- Lucide React (icons)
+- React Router (navigation with protected routes)
 - Axios (HTTP client)
 - PapaParse (CSV parsing)
-- Lucide React (icons)
 
-## Installation
+## Quick Start
 
 ```bash
 npm install
+npx vite --host
 ```
 
-## Development
-
-```bash
-npm run dev
-```
-
-Application will run on `http://localhost:5173`
+Application runs on **http://localhost:5173**
 
 ## Build
 
@@ -33,120 +26,100 @@ Application will run on `http://localhost:5173`
 npm run build
 ```
 
-Build output in `dist/` directory.
+Output in `dist/` directory.
 
 ## Project Structure
 
 ```
 src/
 ├── components/
-│   ├── ui/              # shadcn/ui components
-│   └── Layout.jsx       # Main layout wrapper
+│   ├── Layout.jsx           # Main layout with role-based navigation
+│   └── PrivateRoute.jsx     # Protected route wrapper
 ├── pages/
-│   ├── Login.jsx        # Login page
-│   ├── student/         # Student pages
-│   ├── advisor/         # Advisor pages
-│   └── registrar/       # Registrar pages
+│   ├── Login.jsx            # Unified login page (all 7 roles)
+│   ├── student/
+│   │   ├── Dashboard.jsx    # Degree audit, progress, CGPA
+│   │   └── Exceptions.jsx   # Submit & track exception requests
+│   ├── advisor/
+│   │   ├── Dashboard.jsx    # Advisees, at-risk students
+│   │   └── StudentAudit.jsx # Detailed student audit view
+│   ├── registrar/
+│   │   └── Dashboard.jsx    # Import, catalogs, assignments
+│   ├── dean/
+│   │   └── Dashboard.jsx    # Exception review & approval
+│   ├── admission/
+│   │   └── Dashboard.jsx    # Transfer credits, dean approvals
+│   └── admin/
+│       ├── Dashboard.jsx    # Admin overview & metrics
+│       ├── Users.jsx        # User management (CRUD, roles)
+│       ├── Settings.jsx     # System configuration
+│       └── Logs.jsx         # Audit log viewer
 ├── services/
-│   ├── api.js          # Axios instance
-│   ├── authService.js  # Authentication
-│   ├── studentService.js
-│   ├── advisorService.js
-│   └── registrarService.js
+│   ├── api.js               # Axios instance with auth headers
+│   ├── authService.js       # Login, logout, token management
+│   ├── studentService.js    # Student API calls
+│   ├── advisorService.js    # Advisor API calls
+│   ├── registrarService.js  # Registrar API calls
+│   ├── deanService.js       # Dean API calls
+│   ├── admissionService.js  # Admission Cell API calls
+│   └── adminService.js      # System Admin API calls
 ├── contexts/
-│   └── AuthContext.jsx  # Auth state management
-├── utils/
-│   └── cn.js           # Class name utility
-├── App.jsx             # Main app component
-├── main.jsx            # Entry point
-└── index.css           # Global styles
+│   └── AuthContext.jsx      # Auth state & role management
+├── App.jsx                  # Routes & role-based routing
+├── main.jsx                 # Entry point
+└── index.css                # Tailwind & global styles
 ```
 
-## Features
+## Features by Role
 
-### Authentication
-- JWT-based authentication
-- Role-based access control
-- Protected routes
-- Automatic token refresh
+### Student
+- Degree audit with CGPA, credits, progress bars
+- Category-wise requirement tracking (Core, Elective, Lab, Humanities)
+- Completed courses table and remaining requirements
+- Exception request submission (Course Waiver, Grade Exception, Credit Substitution)
+- 2-step pipeline tracker for credit substitution requests
 
-### Student Dashboard
-- Degree audit display
-- CGPA and credit tracking
-- Progress visualization
-- Completed courses table
-- Remaining requirements
-
-### Advisor Dashboard
-- Advisee list
-- At-risk student identification
-- Risk level indicators
+### Faculty Advisor
+- Advisee overview with stats
+- At-risk student identification with 4-criteria risk scoring
+- Risk level badges (High/Medium/Low)
 - Detailed student audit view
 
-### Registrar Dashboard
-- CSV file upload
-- Data validation
-- Import preview
-- Bulk transcript import
-- Error reporting
+### Registrar
+- CSV transcript upload with validation and preview
+- Catalog and requirement viewing
+- Advisor-student assignment management
+- Student records overview
 
-## Components
+### Dean of Academics
+- Exception request queue with filtering
+- Approve/reject with notes
+- Policy review for waivers and substitutions
 
-### shadcn/ui Components Used
-- Button - Interactive buttons with variants
-- Card - Content containers
-- Badge - Status indicators
-- Input - Form inputs
-- Table - Data tables
+### Admission Cell
+- Transfer credit recording with external institution details
+- Dean-approved credit substitution processing
+- Student lookup and evaluation status management
 
-### Custom Components
-- Layout - Page wrapper with header/footer
-- Login - Authentication page
+### System Administrator
+- User management table (create, edit, lock/unlock, reset password, delete)
+- Role assignment across all 7 user types
+- System configuration (academic year, semester, thresholds, maintenance mode)
+- Searchable audit log viewer with inspector modal
 
-## API Integration
+## Design System
 
-Base URL: `http://localhost:5000/api`
-
-API requests automatically include JWT token from localStorage.
-
-### Error Handling
-- 401 responses trigger logout
-- Error messages displayed to user
-- Network errors handled gracefully
-
-## Styling
-
-### Tailwind Configuration
-- Custom color scheme matching LNMIIT branding
-- Responsive breakpoints
-- shadcn/ui theme variables
-
-### Design System
-- Primary color: Blue (#3B82F6)
-- Success: Green
-- Warning: Orange/Yellow
-- Danger: Red
-- Neutral: Gray scale
+- **Primary Navy**: `#1e2d4a` (headers, buttons)
+- **Cards**: Rounded corners, subtle shadows
+- **Status Pills**: Color-coded badges for status indicators
+- **Responsive**: Desktop and mobile layouts
+- **Icons**: Lucide React icon library
 
 ## Environment
 
-### Development
-- Hot module replacement (HMR)
-- React Fast Refresh
-- Proxy to backend API
-
-### Production
-- Optimized build
-- Code splitting
-- Asset optimization
-
-## Browser Support
-
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
+- **Backend API**: `http://localhost:5000/api` (configured in `services/api.js`)
+- **Dev Server**: Vite HMR on port 5173
 
 ## Team
 
-Team T030 - LNMIIT
+Team T030 — LNMIIT

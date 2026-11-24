@@ -1,130 +1,110 @@
-# Quick Start Guide - LNMIIT Degree Audit System
+# Quick Start Guide — LNMIIT Degree Audit System
 
-Get the system running in 5 minutes.
+Get the full 7-role system running in 5 minutes.
 
 ## Step 1: Install Dependencies
 
-### Backend
 ```bash
+# Backend
 cd backend
+npm install
+
+# Frontend
+cd ../frontend
 npm install
 ```
 
-### Frontend
-```bash
-cd frontend
-npm install
-```
-
-## Step 2: Start Backend Server
+## Step 2: Start Backend Server (Terminal 1)
 
 ```bash
 cd backend
-npm run dev
+node server.js
 ```
 
 You should see:
 ```
 === LNMIIT Degree Audit System API ===
-Server running on port 5000
 Environment: development
 
-Seeding database with sample data...
-Database seeded successfully!
-
 Test Credentials:
-  Student: rohan.mehta@lnmiit.ac.in / password123
+  Student: 24ucs101@lnmiit.ac.in / password123
   Advisor: dr.sharma@lnmiit.ac.in / password123
   Registrar: registrar@lnmiit.ac.in / password123
+  Dean: dean.academics@lnmiit.ac.in / password123
+  Admission Cell: admission@lnmiit.ac.in / password123
+  System Admin: admin@lnmiit.ac.in / password123
 ```
 
 Backend is now running on **http://localhost:5000**
 
-## Step 3: Start Frontend Application
-
-Open a new terminal:
+## Step 3: Start Frontend (Terminal 2)
 
 ```bash
 cd frontend
-npm run dev
-```
-
-You should see:
-```
-VITE v5.x.x  ready in xxx ms
-
-➜  Local:   http://localhost:5173/
-➜  Network: use --host to expose
+npx vite --host
 ```
 
 Frontend is now running on **http://localhost:5173**
 
-## Step 4: Access the Application
+## Step 4: Open Browser
 
-Open your browser and navigate to: **http://localhost:5173**
+Navigate to **http://localhost:5173**
 
-## Step 5: Test the System
+## Step 5: Test Each Role
 
-### Test as Student (UC-002: View Degree Audit)
+### 1. Student — View Degree Audit & Request Exceptions
 
-1. Login with:
-   - Email: `rohan.mehta@lnmiit.ac.in`
-   - Password: `password123`
+- **Login**: `24ucs101@lnmiit.ac.in` / `password123`
+- **Dashboard**: CGPA, credits earned/required, progress bars, graduation status
+- **Exceptions**: Submit course waivers, grade exceptions, or credit substitutions
+- Track credit substitution pipeline: Dean Approval → Admission Cell
 
-2. You'll see:
-   - CGPA: 8.1
-   - Credits Earned: 48 / 160
-   - Progress: 30%
-   - Graduation Status: In Progress
+### 2. Faculty Advisor — Identify At-Risk Students
 
-3. Scroll to view:
-   - Requirement progress bars
-   - Completed courses table
-   - Remaining requirements
+- **Login**: `dr.sharma@lnmiit.ac.in` / `password123`
+- **Dashboard**: Total advisees, at-risk count, risk percentages
+- **At-Risk List**: Students flagged by CGPA, credit deficiency, missing cores, inactivity
+- **Student Audit**: Click "View Audit" on any advisee
 
-### Test as Faculty Advisor (UC-005: Identify At-Risk Students)
+### 3. Registrar — Import Transcripts
 
-1. Logout and login with:
-   - Email: `dr.sharma@lnmiit.ac.in`
-   - Password: `password123`
+- **Login**: `registrar@lnmiit.ac.in` / `password123`
+- **Import**: Upload CSV → Validate → Preview → Confirm Import
+- **Catalogs**: View course catalogs and degree requirements
+- **Assignments**: Manage student-advisor mappings
 
-2. You'll see:
-   - Total Advisees: 5
-   - At-Risk Students: 2
-   - Risk percentage
+### 4. Dean — Approve Exception Requests
 
-3. View the at-risk student list showing:
-   - Student name and ID
-   - Risk level (High/Medium/Low)
-   - CGPA and credits
-   - Risk factors
+- **Login**: `dean.academics@lnmiit.ac.in` / `password123`
+- **Exception Queue**: Review pending requests from students
+- **Approve/Reject**: With detailed justification notes
 
-4. Click "View Audit" on any student to see detailed progress
+### 5. Admission Cell — Process Transfer Credits
 
-### Test as Registrar (UC-006: Import Student Transcripts)
+- **Login**: `admission@lnmiit.ac.in` / `password123`
+- **Dean Approvals**: Process credit substitutions approved by Dean
+- **Record Credits**: External institution, course, grade, credit mapping
 
-1. Logout and login with:
-   - Email: `registrar@lnmiit.ac.in`
-   - Password: `password123`
+### 6. System Administrator — Manage System
 
-2. Create a test CSV file (`test_import.csv`):
+- **Login**: `admin@lnmiit.ac.in` / `password123`
+- **Users**: Create, edit, lock/unlock, change roles, reset passwords
+- **Settings**: Academic year, semester, catalog year, at-risk threshold, maintenance mode
+- **Audit Logs**: View all system operations with timestamps
+
+## CSV Import Format
+
 ```csv
 studentId,courseCode,semester,grade,credits
-S1001,CS303,Fall 2025,8.5,4
-S1002,CS303,Fall 2025,7.8,4
+S1001,CS401,Fall 2025,8.5,4
+S1002,CS402,Fall 2025,7.8,4
 ```
-
-3. Upload the file
-4. Click "Validate & Preview"
-5. Review validation results
-6. Click "Import X Records"
-7. See import summary
 
 ## Troubleshooting
 
 ### Backend won't start
-- Check if port 5000 is available
-- Ensure Node.js 18+ is installed
+- Check if port 5000 is available: `netstat -ano | findstr :5000`
+- Ensure Node.js 18+ is installed: `node --version`
 - Delete `node_modules` and run `npm install` again
 
 ### Frontend won't start
@@ -133,111 +113,35 @@ S1002,CS303,Fall 2025,7.8,4
 - Delete `node_modules` and run `npm install` again
 
 ### Login fails
-- Ensure backend is running
-- Check browser console for errors
-- Verify you're using correct test credentials
+- Ensure backend is running on port 5000
+- Check browser console (F12) for errors
+- Verify credentials from the table above
 
-### Cannot import CSV
-- Ensure CSV has correct column names
-- Check that student IDs exist (S1001-S1008)
-- Check that course codes exist (CS101, CS102, etc.)
-
-## What's Included
-
-### Sample Data
-- 8 students (S1001 - S1008)
-- 2 faculty advisors (A001, A002)
-- 1 registrar (R001)
-- 16 courses
-- 20+ transcript records
-- 2 catalogs (2023, 2024)
-
-### At-Risk Students (Pre-loaded)
-- S1003 (Amit Kumar) - Low CGPA, credit deficiency
-- S1005 (Vikram Patel) - Significant credit deficiency
-
-## Next Steps
-
-1. **Explore the Documentation**
-   - See `.kiro/documentation/` for complete system specs
-   - Check `backend/API_DOCUMENTATION.md` for API details
-
-2. **Customize Sample Data**
-   - Edit `backend/src/data/seedData.js`
-   - Restart backend to reload
-
-3. **Test All Features**
-   - Try different user roles
-   - Test validation errors in import
-   - View different student audits
-
-4. **Review Code**
-   - Backend: `backend/src/`
-   - Frontend: `frontend/src/`
-
-## Architecture Overview
-
-```
-┌─────────────────────────────────────────┐
-│         Frontend (React)                │
-│         http://localhost:5173           │
-│                                         │
-│  - Login Page                          │
-│  - Student Dashboard                   │
-│  - Advisor Dashboard                   │
-│  - Registrar Dashboard                 │
-└────────────────┬────────────────────────┘
-                 │ HTTP/REST API
-                 │ (Axios)
-┌────────────────▼────────────────────────┐
-│         Backend (Node.js)               │
-│         http://localhost:5000/api       │
-│                                         │
-│  - Authentication (JWT)                │
-│  - Audit Calculation                   │
-│  - At-Risk Assessment                  │
-│  - Import Validation                   │
-└────────────────┬────────────────────────┘
-                 │
-┌────────────────▼────────────────────────┐
-│      In-Memory Storage                  │
-│      (Seed Data on Startup)            │
-│                                         │
-│  - Users, Students, Advisors           │
-│  - Courses, Catalogs, Requirements     │
-│  - Transcripts, Audits                 │
-└─────────────────────────────────────────┘
-```
+### Connection timed out
+- Make sure you started Vite with `--host` flag
+- Try `npx vite --host` instead of `npm run dev`
 
 ## System URLs
 
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:5000/api
-- **API Health Check**: http://localhost:5000/health
+- **Health Check**: http://localhost:5000/health
 
-## Key Commands
+## What's Included (Auto-Seeded Data)
 
-### Backend
-```bash
-npm run dev      # Development mode with auto-restart
-npm start        # Production mode
-```
-
-### Frontend
-```bash
-npm run dev      # Development mode with HMR
-npm run build    # Production build
-npm run preview  # Preview production build
-```
-
-## Need Help?
-
-- Check the main README.md
-- See documentation in `.kiro/documentation/`
-- Review backend API docs: `backend/API_DOCUMENTATION.md`
-- Check browser console for frontend errors
-- Check terminal for backend errors
+| Entity | Count |
+|--------|-------|
+| Users | 19 |
+| Students | 12 |
+| Faculty Advisors | 3 |
+| Courses | 39 |
+| Transcripts | 73 |
+| Catalogs | 6 |
+| Requirements | 24 |
+| Exception Requests | 5 |
+| Transfer Credits | 3 |
+| System Logs | 5 |
 
 ---
 
-**Team T030 - LNMIIT**
+**Team T030 — LNMIIT**
